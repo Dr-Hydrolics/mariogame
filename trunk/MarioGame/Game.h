@@ -3,8 +3,8 @@
 #include "MyBitmap.h"
 #include "Sprite.h"
 
-#define SCREENWIDTH 640+16
-#define SCREENHEIGHT 480+36
+#define SCREENWIDTH (640+6)
+#define SCREENHEIGHT (480+26)
 #define FRAMES_PER_SEC 50
 #define KEY_DOWN(vk_code) ( (GetAsyncKeyState(vk_code) & 0x8000)? 1 : 0 )
 class CGame

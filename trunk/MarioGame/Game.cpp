@@ -15,7 +15,7 @@ CGame::~CGame(void)
 
 int CGame::Init(HWND hWnd)
 {	
-	numStep = 5;
+	numStep = 10;
 	walkRight = numStep+1;
 	mainWnd = hWnd;	
 	// Khoi tao HDC cua cua so	
