@@ -48,14 +48,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MARIOGAME));
 
 	// Main message loop:
-	/*while (GetMessage(&msg, NULL, 0, 0))
-	{
-		if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-	}*/	
 	myGame.Init(hWnd);
 	while(TRUE)
 	{
@@ -98,9 +90,13 @@ HWND InitInstance(HINSTANCE hInstance, int nCmdShow)
    HWND hWnd = NULL;
 
    hInst = hInstance; // Store instance handle in our global variable
-
-    hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW ,
-      CW_USEDEFAULT, 0, SCREENWIDTH, SCREENHEIGHT, NULL, NULL, hInstance, NULL);
+	int scrWidth, scrHeight, xPos, yPos;
+	scrWidth = GetSystemMetrics(SM_CXSCREEN);
+	scrHeight = GetSystemMetrics(SM_CYSCREEN);
+	xPos = (scrWidth - (SCREENWIDTH + 16))/2;
+	yPos = (scrHeight - (SCREENHEIGHT + 36))/2;
+    hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+      xPos, yPos, SCREENWIDTH, SCREENHEIGHT, NULL, NULL, hInstance, NULL);
 
    if (!hWnd)
    {
@@ -121,6 +117,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	switch (message)
 	{
+	case WM_SIZE:
+		SetWindowPos(hWnd,HWND_TOP,0,0,SCREENWIDTH,SCREENHEIGHT,SWP_NOMOVE);
+		break;
 	case WM_KEYDOWN:
 		myGame.OnKeyDown(wParam, lParam);
 		break;

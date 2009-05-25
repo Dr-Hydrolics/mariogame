@@ -3,8 +3,8 @@
 #include "MyBitmap.h"
 #include "Sprite.h"
 
-#define SCREENWIDTH 640
-#define SCREENHEIGHT 480
+#define SCREENWIDTH 640+16
+#define SCREENHEIGHT 480+36
 #define FRAMES_PER_SEC 50
 #define KEY_DOWN(vk_code) ( (GetAsyncKeyState(vk_code) & 0x8000)? 1 : 0 )
 class CGame
@@ -17,8 +17,11 @@ private:
 	HBITMAP oldBitmap;
 	Bitmap_Operations* pBmOp;
 	Sprite* character;
-	long iTick;
-	int LoadBackground(LPCTSTR bgName);
+	MyBitmap* bmBackGround;
+	MyBitmap* bmMenu;	
+	int iTickCount;
+	int DrawBackground();
+	int DrawMenu();
 public:
 	int Init(HWND hWnd);
 	int Run();

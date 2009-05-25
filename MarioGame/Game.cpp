@@ -5,7 +5,7 @@ CGame::CGame(void)
 	mainWnd = NULL;
 	wndDC = NULL;
 	character = NULL;
-	iTick = 0;
+	iTickCount = 0;
 	pBmOp = NULL;
 }
 
@@ -15,46 +15,44 @@ CGame::~CGame(void)
 
 int CGame::Init(HWND hWnd)
 {	
-	// Khoi tao HDC cua cua so
 	mainWnd = hWnd;	
-	///
-		InitHDC();
-	///	
-	//pBmOp = new Bitmap_Operations();
-	//pBmOp->Initialize_Buffers(mainWnd,1);
-	//pBmOp->Create_Buffer(0);
-	//character->Render(pBmOp->Get_DC_Buffer(0));
-	// memDC = pBmOp->Get_DC_Buffer(0);
-	// Load BG
-	LoadBackground(_T("MenuBackground.bmp"));
+	// Khoi tao HDC cua cua so	
+	InitHDC();	
+	
+	// Khoi tao, load Background
+	bmBackGround = new MyBitmap(_T("background.bmp"));
+	DrawBackground();
+	
+	// Khoi tao, load Menu
+	bmMenu = new MyBitmap(_T("menus.bmp"));
+	DrawMenu();
+	
 	// Phat nhac nen
 	// PlaySound(TEXT("Music\\victory.mid"),NULL, SND_FILENAME|SND_LOOP|SND_ASYNC);
 	
 	// Khoi tao cac doi tuong trong game
 	MyBitmap* bmMario = new MyBitmap(_T("mario.bmp"));
-	character = new Sprite(0,0,18,36,1,5,2,bmMario);
-	iTick = GetTickCount();
+	character = new Sprite(0,320,18,36,1,5,2,bmMario);
+	iTickCount = GetTickCount();
 	
-	character->Render(memDC);
-	//pBmOp->Copy_to_Screen(0);	
+	character->Render(memDC);	
 	CopyToScreen();
 	return 1;
 }
 
 int CGame::Run()
 {	
-	if(GetTickCount() - iTick >= 1000/FRAMES_PER_SEC )
+	if(GetTickCount() - iTickCount >= 1000/FRAMES_PER_SEC )
 	{
 		if(KEY_DOWN(VK_RIGHT))
 		{
 			character->mXPos = (character->mXPos + character->mXMove)%622;			
 			character->NextFrame();
 		}
-		iTick = GetTickCount();		
-		LoadBackground(_T("MenuBackground.bmp"));		
-		//character->Render(pBmOp->Get_DC_Buffer(0));
-		character->Render(memDC);
-		//pBmOp->Copy_to_Screen(0);	
+		iTickCount = GetTickCount();		
+		DrawBackground();		
+		DrawMenu();		
+		character->Render(memDC);		
 		CopyToScreen();
 	}
 	
@@ -63,23 +61,24 @@ int CGame::Run()
 
 int CGame::End()
 {
-	//pBmOp->Free_Buffer(0);
-	//delete pBmOp;
-	//ReleaseDC(mainWnd, wndDC);
 	ReleaseHDC();
 	return 1;
 }
 
-int CGame::LoadBackground(LPCTSTR bgName)
-{
-	MyBitmap bm(bgName);	
-	//bm.DrawTransparent(pBmOp->Get_DC_Buffer(0),0,0,RGB(255,255,255));	
-	bm.DrawTransparent(memDC,0,0,RGB(255,255,255));	
-	MyBitmap bm1(_T("menus.bmp"));
-	//bm1.DrawTransparent(pBmOp->Get_DC_Buffer(0),100,100,RGB(255,255,255));	
-	bm1.DrawTransparent(memDC,100,100,RGB(255,255,255));	
+int CGame::DrawBackground()
+{	
+	if(!bmBackGround)
+		return 0;
+	bmBackGround->DrawTransparent(memDC,0,0,RGB(255,255,255));			
+	return 1;
+}
 
-	return 0;
+int CGame::DrawMenu()
+{
+	if(!bmMenu)
+		return 0;	
+	bmMenu->DrawTransparent(memDC,100,100,RGB(255,255,255));	
+	return 1;
 }
 
 int CGame::OnKeyDown(WPARAM wParam, LPARAM lParam)
