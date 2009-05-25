@@ -19,6 +19,9 @@ private:
 	Sprite* character;
 	MyBitmap* bmBackGround;
 	MyBitmap* bmMenu;	
+	MyBitmap* bmMario;
+	int walkRight;
+	int numStep;
 	int iTickCount;
 	int DrawBackground();
 	int DrawMenu();
