@@ -93,16 +93,15 @@ HWND InitInstance(HINSTANCE hInstance, int nCmdShow)
 	int scrWidth, scrHeight, xPos, yPos;
 	scrWidth = GetSystemMetrics(SM_CXSCREEN);
 	scrHeight = GetSystemMetrics(SM_CYSCREEN);
-	xPos = (scrWidth - (SCREENWIDTH + 16))/2;
-	yPos = (scrHeight - (SCREENHEIGHT + 36))/2;
-    hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+	xPos = (scrWidth - SCREENWIDTH)/2;
+	yPos = (scrHeight - SCREENHEIGHT)/2;
+    hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPED|WS_MINIMIZEBOX|WS_SYSMENU,
       xPos, yPos, SCREENWIDTH, SCREENHEIGHT, NULL, NULL, hInstance, NULL);
 
    if (!hWnd)
    {
       return FALSE;
-   }
-	//SetWindowPos(hWnd, HWND_TOP,0,0,0,0,SWP_NOMOVE | SWP_NOSIZE);
+   }//317 294
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
@@ -116,12 +115,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	HDC hdc;
 
 	switch (message)
-	{
-	case WM_SIZE:
-		SetWindowPos(hWnd,HWND_TOP,0,0,SCREENWIDTH,SCREENHEIGHT,SWP_NOMOVE);
-		break;
+	{	
 	case WM_KEYDOWN:
-		myGame.OnKeyDown(wParam, lParam);
+	//	myGame.OnKeyDown(wParam, lParam);
 		break;
 	case WM_COMMAND:
 		wmId    = LOWORD(wParam);
