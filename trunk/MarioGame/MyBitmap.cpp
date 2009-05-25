@@ -10,8 +10,7 @@ MyBitmap::~MyBitmap(void)
 }
 
 MyBitmap::MyBitmap(LPCTSTR bmName)
-{
-	
+{	
 	HINSTANCE hInst = NULL;
 	hBitmap = (HBITMAP)LoadImage(hInst, bmName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 }
