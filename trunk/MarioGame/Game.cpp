@@ -15,6 +15,8 @@ CGame::~CGame(void)
 
 int CGame::Init(HWND hWnd)
 {	
+	numStep = 5;
+	walkRight = numStep+1;
 	mainWnd = hWnd;	
 	// Khoi tao HDC cua cua so	
 	InitHDC();	
@@ -31,7 +33,7 @@ int CGame::Init(HWND hWnd)
 	// PlaySound(TEXT("Music\\victory.mid"),NULL, SND_FILENAME|SND_LOOP|SND_ASYNC);
 	
 	// Khoi tao cac doi tuong trong game
-	MyBitmap* bmMario = new MyBitmap(_T("mario.bmp"));
+	bmMario = new MyBitmap(_T("mario.bmp"));
 	character = new Sprite(0,320,18,36,1,5,2,bmMario);
 	iTickCount = GetTickCount();
 	
@@ -46,7 +48,29 @@ int CGame::Run()
 	{
 		if(KEY_DOWN(VK_RIGHT))
 		{
+			//character->mXPos = (character->mXPos + character->mXMove)%622;			
+			//character->NextFrame();
+			walkRight = 0;
+		}
+		if(walkRight<numStep)
+		{
+			walkRight++;
 			character->mXPos = (character->mXPos + character->mXMove)%622;			
+			character->NextFrame();
+		}		
+		if(KEY_DOWN(VK_LEFT))
+		{
+			character->mXPos = (character->mXPos - character->mXMove + 622)%622;			
+			character->NextFrame();
+		}
+		if(KEY_DOWN(VK_DOWN))
+		{
+			character->mYPos = (character->mYPos + character->mYMove)%460;			
+			character->NextFrame();
+		}
+		if(KEY_DOWN(VK_UP))
+		{
+			character->mYPos = (character->mYPos - character->mYMove + 460)%460;
 			character->NextFrame();
 		}
 		iTickCount = GetTickCount();		
@@ -62,6 +86,12 @@ int CGame::Run()
 int CGame::End()
 {
 	ReleaseHDC();
+	if(bmBackGround)
+		delete bmBackGround;
+	if(bmMenu)
+		delete bmMenu;
+	if(bmMario)
+		delete bmMario;
 	return 1;
 }
 
@@ -69,7 +99,8 @@ int CGame::DrawBackground()
 {	
 	if(!bmBackGround)
 		return 0;
-	bmBackGround->DrawTransparent(memDC,0,0,RGB(255,255,255));			
+	//bmBackGround->DrawTransparent(memDC,0,0,RGB(255,255,255));
+	bmBackGround->Draw(memDC,0,0);			
 	return 1;
 }
 
@@ -77,7 +108,7 @@ int CGame::DrawMenu()
 {
 	if(!bmMenu)
 		return 0;	
-	bmMenu->DrawTransparent(memDC,100,100,RGB(255,255,255));	
+	bmMenu->DrawTransparent(memDC,100,100,RGB(255,255,255));
 	return 1;
 }
 

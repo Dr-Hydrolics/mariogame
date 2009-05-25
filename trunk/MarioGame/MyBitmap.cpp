@@ -7,12 +7,41 @@ MyBitmap::MyBitmap(void)
 
 MyBitmap::~MyBitmap(void)
 {
+	if(hBitmap)
+		DeleteObject(hBitmap);
 }
 
 MyBitmap::MyBitmap(LPCTSTR bmName)
 {	
 	HINSTANCE hInst = NULL;
 	hBitmap = (HBITMAP)LoadImage(hInst, bmName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+}
+
+void MyBitmap::Draw(HDC pDC, int x, int y)
+{
+	if(!hBitmap)
+		return;
+	try
+	{	
+		HDC dcImage;
+		dcImage = CreateCompatibleDC(pDC);		
+			// Select the image into the appropriate dc
+		HBITMAP pOldBitmapImage = (HBITMAP)SelectObject(dcImage,hBitmap);
+		BITMAP bm;
+		GetObject(hBitmap, sizeof(BITMAP), &bm);
+		int nWidth = bm.bmWidth;
+		int nHeight = bm.bmHeight;
+		BitBlt(pDC, x, y, nWidth, nHeight, dcImage, 0, 0, SRCCOPY);
+		// Restore settings
+		SelectObject(dcImage, pOldBitmapImage);	
+		// Delete DC and Bitmap
+		DeleteDC(dcImage);
+		DeleteObject(pOldBitmapImage);
+	}
+	catch(char* str)
+	{
+
+	}
 }
 
 void MyBitmap::DrawTransparent(HDC pDC, int x, int y, COLORREF crColour)
@@ -49,7 +78,6 @@ void MyBitmap::DrawTransparent(HDC pDC, int x, int y, COLORREF crColour)
 		BitBlt(pDC, x, y, nWidth, nHeight, dcImage, 0, 0, SRCINVERT);
 		BitBlt(pDC, x, y, nWidth, nHeight, dcTrans, 0, 0, SRCAND);
 		BitBlt(pDC, x, y, nWidth, nHeight, dcImage, 0, 0, SRCINVERT);
-
 		// Restore settings
 		SelectObject(dcImage, pOldBitmapImage);		
 		SelectObject(dcTrans, pOldBitmapTrans);
@@ -66,7 +94,6 @@ void MyBitmap::DrawTransparent(HDC pDC, int x, int y, COLORREF crColour)
 	{
 	
 	}
-
 }
 
 void MyBitmap::DrawTransparent(HDC pDC, int x, int y,int x1, int y1,int width,int height, COLORREF crColour)
