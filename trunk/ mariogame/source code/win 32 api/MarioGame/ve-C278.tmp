@@ -1,0 +1,325 @@
+#include "StdAfx.h"
+#include "Game.h"
+
+char CGame::JUMP = VK_SHIFT;
+char CGame::SIT = VK_DOWN;
+char CGame::LEFT = VK_LEFT;
+char CGame::RIGHT = VK_RIGHT;
+char CGame::FIRE = 'Z';
+
+CGame::CGame(void)
+{		
+	mScreen = new CScreen();
+	mMenu = new CGameMenu();
+	mMap = new CMap();	
+	mainWnd = NULL;	
+	iTickCount = 0;
+	gameState = gsIntro;
+	mOManager = NULL;
+	mShowMenu = 0;
+	mPause = 0;
+	mStartLevelTime = 0;
+	mEndLevelTime = 0;
+	mStartIntroTime = 0;
+}
+
+CGame::~CGame(void)
+{
+	if(mScreen)
+	{
+		delete mScreen; // Man hinh
+		mScreen = NULL;
+	}
+	if(mMenu)
+	{
+		delete mMenu;
+		mMenu = NULL;
+	}
+	if(mMap)
+	{
+		delete mMap;	// Ban do
+		mMap = NULL;
+	}
+	if(mOManager)
+	{
+		delete mOManager;
+		mOManager = NULL;
+	}
+	if(bgrSound)
+	{
+		delete bgrSound;
+		bgrSound = NULL;
+	}
+	if(eventSound)
+	{
+		delete eventSound;
+		eventSound = NULL;
+	}
+	if(intro)
+	{
+		delete intro;
+		intro = NULL;
+	}
+}
+
+int CGame::Init(HWND hWnd)
+{		
+	mainWnd = hWnd;	
+	// Initthescreen
+	mScreen->Init(hWnd);
+	// endInitthescreen	
+	intro = new MyBitmap(_T("intro.bmp"));
+	gameState = gsIntro;
+	Intro();
+	/*gameState=gsLevel1;	
+	mLevel = 1;
+	mOManager = new CObjectManager();		 
+	mCoinIcon = new MyBitmap(_T("coinicon.bmp"));
+	mLifeIcon = new MyBitmap(_T("lifeicon.bmp"));
+	gameState=gsMenu;	
+	StartGame();
+	*/
+	return 1;
+}
+// 73008888
+
+int CGame::StartGame()
+{			
+	// Phat nhac nen	
+	//hThread = CreateThread(NULL,0,playBGSound,NULL,0,NULL);		
+	mScreen->LoadFarBackground(_T("background.bmp"));	
+	mScreen->DrawBackGround();
+	//load Menu
+	mMenu->Init(_T("menu.bmp"));
+	mMenu->Draw(mScreen->GetMemDC(),mScreen->ViewPort());
+	mScreen->Present();	
+	
+	return 1;
+}
+
+int CGame::Intro()
+{	
+	//mScreen->LoadFarBackground(_T("background.bmp"));
+	//mScreen->DrawBackGround();
+	mStartIntroTime = GetTickCount();
+	intro->Draw(mScreen->GetMemDC(),0,0,0,0,640,480);
+	mScreen->Present();
+	return 1;	
+}
+
+int CGame::LoadRound(int level)
+{	
+//	BOOL succ = TerminateThread(hThread,0);
+	mStartLevelTime = GetTickCount();
+	// Loadmapdata
+	mMap->Init(_T("maptiles.bmp"));
+	LPTSTR mapName = new TCHAR[256];
+	wsprintf(mapName,_T("Map\\level%d.map"),level);
+	mMap->LoadMapData(mapName);
+	// endLoadmapdata
+	mPause = 0;
+	mShowMenu = 0;
+	CGTimer::Start();
+	// Loadmapbitmap
+	mScreen->ViewPortXMaxLeft();
+	mScreen->LoadMap(mMap);
+	mScreen->LoadFarBackground(_T("farbackground.bmp"));
+	mScreen->DrawBackGround();	
+	mScreen->Present();
+	// endLoadmapbitmap	  
+	
+	// InitObjects Khoi tao cac doi tuong trong man choi	
+	
+	mOManager->Init(level, mMap);
+	mOManager->Present(mScreen);
+	// endInitObjects
+	
+	iTickCount = GetTickCount();
+	
+	// Renderingthescreen
+	mScreen->Present();	
+	// endRenderingthescreen
+	
+	//WaveFile *coinSound = new WaveFile("Music\\BackgroundBegin.wav");
+	//coinSound->Play(0);		
+	//delete coinSound;
+	//bgrSound = new WaveFile("Music\\BackgroundBegin.wav");
+	//bgrSound->Play(0);
+	return 1;
+}
+int CGame::Run()
+{  			
+	if(gameState == -1 && mPause == 0)
+	{
+		mScreen->DrawBackGround();
+		CText::Draw(_T("Game over"), mScreen->GetMemDC(), (mScreen->GetViewPortWidth() - CText::mCharWidth*9)/2 , mScreen->GetViewPortHeight()/2 - 30);
+		mScreen->Present();																														   		
+	}
+	if (gameState==gsIntro)
+	{
+		if(GetTickCount() - mStartIntroTime >= 3000 )
+		{
+			if (posIntro==3)
+			{
+				gameState=gsMenu;
+				delete intro;
+				intro = NULL;
+				StartGame();
+			}			
+		}
+		return 1;
+	}
+	int res = 0;
+	if(GetTickCount() - iTickCount >= FRAME_CYCLE && gameState==gsPlaying && mPause == 0)
+	{		
+		iTickCount = GetTickCount();			
+		res = mOManager->Animate(mScreen);					
+		mScreen->DrawBackGround();	
+		mOManager->Present(mScreen);			
+		CText::Draw(mTimer.ToString(), mScreen->GetMemDC(), mScreen->GetViewPortWidth() - CText::mCharWidth*6 , 0);
+		mLifeIcon->DrawTransparent(mScreen->GetMemDC(), 10, 8, RGB(255,0,255));
+		mCoinIcon->DrawTransparent(mScreen->GetMemDC(), mScreen->Center() - 25, 10, RGB(255,0,255));			
+
+		if(mStartLevelTime != 0)
+		{
+			if(GetTickCount() - mStartLevelTime <= 2000)
+			{				
+				TCHAR *temp = new TCHAR[256];
+				wsprintf(temp,_T("Ready for level %d"),mLevel);
+				CText::Draw(temp, mScreen->GetMemDC(), (mScreen->GetViewPortWidth() - CText::mCharWidth*9)/2 , mScreen->GetViewPortHeight()/2 - 30);
+				delete temp;
+			}
+			else
+			{
+				mStartLevelTime = 0;
+			}									
+		}
+		if(mEndLevelTime != 0)
+		{	 
+			if(GetTickCount() - mEndLevelTime <= 3000)
+			{
+				TCHAR *temp = new TCHAR[256];
+				wsprintf(temp,_T("Finish level %d"),mLevel);
+				CText::Draw(temp, mScreen->GetMemDC(), (mScreen->GetViewPortWidth() - CText::mCharWidth*9)/2 , mScreen->GetViewPortHeight()/2 - 30);
+				delete temp;
+			}
+			else
+			{
+				mOManager->Release();
+				mLevel++;
+				mEndLevelTime = 0;
+				LoadRound(mLevel);	
+				return 1;
+			}
+		}
+		mScreen->Present();		
+		if(res == -1)
+		{
+			gameState = -1;
+		}
+		if(res == 1)
+		{				
+			mEndLevelTime = GetTickCount();				
+		}			
+	}
+	return 1;
+}
+
+int CGame::End()
+{
+	if(mScreen)
+	{
+		delete mScreen; // Man hinh
+		mScreen = NULL;
+	}
+	if(mMenu)
+	{
+		delete mMenu;
+		mMenu = NULL;
+	}
+	if(mMap)
+	{
+		delete mMap;	// Ban do
+		mMap = NULL;
+	}
+	if(mOManager)
+	{
+		delete mOManager;
+		mOManager = NULL;
+	}
+	if(bgrSound)
+	{
+		delete bgrSound;
+		bgrSound = NULL;
+	}
+	if(eventSound)
+	{
+		delete eventSound;
+		eventSound = NULL;
+	}
+	if(intro)
+	{
+		delete intro;
+		intro = NULL;
+	}
+	return 1;
+}
+
+int CGame::OnKeyDown(WPARAM wParam, LPARAM lParam)
+{	
+	if(wParam == 'M')
+	{
+		mShowMenu = 1 - mShowMenu;
+		mPause = mShowMenu;
+		if(mPause == 1)
+			CGTimer::Pause();
+		else
+			CGTimer::Resume();
+		mScreen->DrawBackGround();	
+		//mOManager->Present(mScreen);
+		mMenu->Draw(mScreen->GetMemDC(), mScreen->ViewPort());
+		mScreen->Present();
+	}
+	if (gameState==gsMenu || mShowMenu == 1)
+	{
+		int i=mMenu->OnKeyDown(wParam, lParam);
+		if(i==0)
+		{ 
+			mScreen->DrawBackGround();	
+			//mOManager->Present(mScreen);
+			//eventSound=new WaveFile("Music\\jump.wav");
+			//eventSound->Play(0);			
+			mMenu->Draw(mScreen->GetMemDC(), mScreen->ViewPort());
+			mScreen->Present();
+		}
+		if (i==1)
+		{
+			if (mMenu->GetSelItem()==0)
+			{
+				gameState=gsPlaying;
+				LoadRound(mLevel);
+			}
+			if (mMenu->GetSelItem()==3)
+			{
+				mPause = mShowMenu = 0;				
+				CGTimer::Resume();
+				mScreen->DrawBackGround();	
+				//mOManager->Present(mScreen);
+				//eventSound=new WaveFile("Music\\jump.wav");
+				//eventSound->Play(0);			
+				mMenu->Draw(mScreen->GetMemDC(),mScreen->ViewPort());
+				mScreen->Present();
+			}
+			if (mMenu->GetSelItem()==4)
+			{
+				PostQuitMessage(0);
+			}
+		}
+	}
+	return 1;
+}
+
+void CGame::OnTimer()
+{
+
+}
