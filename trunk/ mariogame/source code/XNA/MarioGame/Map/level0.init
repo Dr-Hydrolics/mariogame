@@ -1,0 +1,8 @@
+// Mario ViTriX ViTriY ChieuRong ChieuCao TenBitmap
+24 396 18 36 mario.bmp
+// Quaivat LopXuLyThuMay ViTriX ViTriY ChieuRong ChieuCao TenBitmap Huong{0:trai,1:phai} TocDo
+1 650 184 24 32 monster03.bmp 1 0.1
+5 700 90 24 32 monster05.bmp 1 0.1
+3 950 88 24 32 monster04.bmp 0 0.1
+// Boss
+21 400 185 42 40 commander.bmp 0 0.1 
