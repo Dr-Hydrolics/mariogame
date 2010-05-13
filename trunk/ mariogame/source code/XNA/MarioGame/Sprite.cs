@@ -32,6 +32,10 @@ namespace MarioGame
         public int mXPos;	// Vi tri X cua Sprite tren man hinh
         public int mYPos;	// Vi tri Y cua Sprite tren man hinh
 
+        public int mRealXPos;	// Vi tri X cua Sprite tren man hinh
+        public int mRealYPos;	// Vi tri Y cua Sprite tren man hinh
+
+        protected Vector2 spriteDirection;
         public Sprite(int srcX, int srcY, int Width, int Height, int frameDirection, int frameCount, int frameDelay, Texture2D image)
         {
             mXPos = srcX;
@@ -46,6 +50,7 @@ namespace MarioGame
             mLoopType = 0;
             mCurDelay = 0;
             mLoopDirection = 1;
+            spriteDirection = new Vector2(1, 1);
         }
         public Sprite(int srcX, int srcY, int Width, int Height, int frameDirection, int frameCount, int frameDelay, String bmSrpiteName)
         {
@@ -61,12 +66,16 @@ namespace MarioGame
             mLoopType = 0;
             mCurDelay = 0;
             mLoopDirection = 1;
+            spriteDirection = new Vector2(1, 1);
         }
         public void SetLoopType(int loopType)
         {
+            if ((0 <= loopType) && (loopType <= 1))
+                mLoopType = loopType;
         }
         public void SetCurrentFrame(int iFrame)
         {
+            mCurFrame = iFrame;
         }
         public void NextFrame()
         {
@@ -80,9 +89,17 @@ namespace MarioGame
         }
         public void PreviousFrame()
         {
+            if (mCurDelay >= mDelayCount)
+            {
+                mCurDelay = 0;
+                mCurFrame = (mCurFrame - 1 + mFrameCount) % mFrameCount;
+            }
+            else
+                mCurDelay++;
         }
         public void SetDelay(int Delay)
         {
+            mDelayCount = Delay;
         }
         //public void Render(HDC pDC);		// Hien thi frame len man hinh
         public void Render(SpriteBatch spriteBatch)		// Hien thi frame len man hinh
@@ -93,9 +110,22 @@ namespace MarioGame
             if (mFrameDirection == 0)
                 imageY += (mCurFrame * mFrameHeight);
             else
-                imageX += (mCurFrame * mFrameWidth);            
-            //mImage->DrawTransparent(pDC, mXPos, mYPos, imageX, imageY, mFrameWidth, mFrameHeight, RGB(255, 0, 255));	
-            spriteBatch.Draw(mImage, new Vector2(mXPos, mYPos), new Rectangle(imageX, imageY, mFrameWidth, mFrameHeight), Color.White);
+                imageX += (mCurFrame * mFrameWidth);
+            SpriteEffects flip = SpriteEffects.None;
+            if (spriteDirection.Y < 0)
+                flip = SpriteEffects.FlipVertically;
+            if (spriteDirection.X < 0)
+                flip = SpriteEffects.FlipHorizontally;
+            spriteBatch.Draw(mImage, new Vector2(mXPos, mYPos), new Rectangle(imageX, imageY, mFrameWidth, mFrameHeight), Color.White, 0, new Vector2(0, 0), 1, flip, 0);
+        }
+        public void Draw(SpriteBatch spriteBatch, Rectangle view)
+        {
+            if (mRealXPos - view.Left + mWidth >= 0 && mRealYPos - view.Top + mHeight >= 0)
+            {
+                mAnimation->mXPos = mXPos - view.left;
+                mAnimation->mYPos = mYPos - view.top;
+                mAnimation->Render(hDC);
+            }
         }
         public void RenderBlend(SpriteBatch spriteBatch, int alphaBlend)
         {
@@ -106,9 +136,29 @@ namespace MarioGame
         }
         public void FlipFrame()
         {
+            spriteDirection.X = -spriteDirection.X;            
+            /*int n = mImage.Width/mFrameWidth;
+            Color[] data = new Color[mImage.Width*mImage.Height];            
+            mImage.GetData<Color>(data);
+            Color temp;
+            for (int i = 0; i < mImage.Height; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    for (int k = 0; k < mFrameWidth / 2; k++)
+                    {
+                        temp = data[i * mImage.Width + j * mFrameWidth + k];
+                        data[i * mImage.Width + j * mFrameWidth + k] = data[i * mImage.Width + j * mFrameWidth + mFrameWidth - 1 - k];
+                        data[i * mImage.Width + j * mFrameWidth + mFrameWidth - 1 - k] = temp;
+                    }
+                }
+            }
+            mImage.SetData<Color>(data);*/
         }
         public void SetPos(int x, int y)
         {
+            mXPos = x;
+            mYPos = y;
         }
         public int GetCurDelay()
         {

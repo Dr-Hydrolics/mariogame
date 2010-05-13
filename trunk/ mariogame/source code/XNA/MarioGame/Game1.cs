@@ -59,7 +59,7 @@ namespace MarioGame
             spriteBatch = new SpriteBatch(graphics.GraphicsDevice);
          //   Texture2D tt = this.Content.Load<Texture2D>(@"Image\xna");
             Texture2D texttureHero = this.Content.Load<Texture2D>(@"Image\mario");
-            hero = new Sprite(50, 50, 18, 36, 1, 5, 1, texttureHero);
+            hero = new Sprite(250, 250, 18, 36, 1, 5, 1, texttureHero);
             
             gameMap = new Map();
             gameMap.Init(@"Content\Image\maptiles.bmp");
@@ -93,7 +93,7 @@ namespace MarioGame
             // TODO: Add your update logic here
             if (gameTime.TotalGameTime.TotalMilliseconds - lastUpdate > 40)
             {
-                hero.NextFrame();
+                hero.NextFrame();               
                 lastUpdate = gameTime.TotalGameTime.TotalMilliseconds;
                 if (left + 5 < 7680)
                 {
